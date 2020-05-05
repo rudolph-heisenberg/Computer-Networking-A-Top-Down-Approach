@@ -1,0 +1,17 @@
+HTTP/1.1 200 OK
+Server: Local Machine
+
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>叶的个人网站</title>
+</head>
+
+<body  bgcolor="yellow">
+<h1 align="center">这个网站刚刚成立, 还在开发中</h1>
+<h1 align="center">欢迎访问</h1>
+
+<p>您是本站的第260位访客</p>
+</body>
+</html>
