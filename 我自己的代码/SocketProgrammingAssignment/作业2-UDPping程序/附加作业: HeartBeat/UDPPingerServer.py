@@ -28,3 +28,4 @@ while True:
 	except timeout:
 		print('A packet is lost...')
 
+serverSocket.close()

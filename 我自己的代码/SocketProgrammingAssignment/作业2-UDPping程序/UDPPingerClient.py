@@ -21,3 +21,4 @@ for i in range(10):
         print('RTT: ' + str((recvTime - sendTime) * 1000) + 'ms')  # 以毫秒显示RTT
     except timeout:
         print('Request timed out')
+clientSocket.close()
