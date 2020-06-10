@@ -140,6 +140,20 @@ void print(int AorB, int arriveOrLeave, int acknum, int seqnum)
     else
         printf("B sent packet, acknum = %d\n", acknum);
 }
+const int DataArrivesWindowFull = 0;
+const int DateArrivesWindowPartlyFull = 1;
+const int ackArrivesBufferNotEmpty = 2;
+void printSenderBufferChange(int circumstances)
+{
+    printf("*****\n");
+    if (circumstances == 0)
+        printf("DataArrivesWindowFull, Buffer grows\n\tcurrent base:%d ,nextseqnum: %d.\n", Abase, Anextseq);
+    else if (circumstances == 1)
+        printf("DataArrivesWindowPartyFull, buffer stays still\n\tcurrent base:%d ,nextseqnum: %d.\n", Abase, Anextseq);
+    else
+        printf("ackArrivesBufferNotEmpty, buffer shortens.\n");
+    printf("bufferlength: %d\n*****\n", bufferLength);
+}
 
 /* called from layer 5, passed the data to be sent to other side */
 void A_output(struct msg message) //this func only sends one msg at a time
@@ -155,6 +169,7 @@ void A_output(struct msg message) //this func only sends one msg at a time
 
         //buffer it
         insertToSenderBuffer(message.data);
+        printSenderBufferChange(0);
     }
     else if (bufferLength) //can be sent but the buffer is not empty
     {
@@ -177,7 +192,7 @@ void A_output(struct msg message) //this func only sends one msg at a time
         //  senderBufferHead->prev = NULL;
         free(temp);
         bufferLength--;
-
+        printSenderBufferChange(1);
         //add the unsent message from the application layer to the sender buffer
         insertToSenderBuffer(message.data);
     }
@@ -207,7 +222,8 @@ void A_input(struct pkt packet)
     for (int i = 0; i < 20; i++)
         checksumComputed += packet.payload[i];
     checksumComputed += (packet.seqnum + packet.acknum);
-    print(A, arrive, packet.acknum, 0);
+    if (checksumComputed == packet.checksum)
+        print(A, arrive, packet.acknum, 0);
     //if it is integrate and advances the window to spare some packet room
     if (checksumComputed == packet.checksum && packet.acknum >= Abase)
     {
@@ -233,7 +249,6 @@ void A_input(struct pkt packet)
         {
             //create the packet to be sent, from sender buffer's head
             packetToBeSent = makePacket(senderBufferHead->msg, Anextseq, 0);
-            Anextseq++;
 
             //delete the first msg in sender buffer
             struct bufferedMsg *nextPtr = senderBufferHead->next;
@@ -242,6 +257,7 @@ void A_input(struct pkt packet)
             free(senderBufferHead);
             senderBufferHead = nextPtr;
             bufferLength--;
+            printSenderBufferChange(2);
 
             //send the packet
             Anextseq++;
